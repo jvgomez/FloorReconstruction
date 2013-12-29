@@ -37,7 +37,7 @@ Pinhole();
 	* @param d d parameter of input surface
 	* @return vector with pixel real position on milimeters
 	* */
-std::vector<double> pinholeInverse (double x, double y, double b, double d, double y_aux);
+std::vector<double> pinholeInverse (double x, double y, double b, double d);
 
 /**
 	* Function to calcule pixel position of a real position.

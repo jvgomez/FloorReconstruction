@@ -22,6 +22,9 @@
 #define MAP_H
 
 #include "matrix.h"
+
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
@@ -32,14 +35,29 @@ Map();
 ~Map();
 
 /**
-	* Function to generate a map reconstruction on Mat format. The function asumes that each pixel of the image represents a square of evironment of 5cm width and 5cm height
+    * Function to generate a map reconstruction on Mat format.
 	* @param roi vector which contains the pixels which pertains to Region of Interest
-	* @param b b parameter of input surface
-	* @param d d parameter of input surface
-	* @param yValues height camera value vector
+    * @param a a parameter of input surface
+    * @param b b parameter of input surface
+    * @param c c parameter of input surface
+    * @param d d parameter of input surface
 	* @return matrix of vectors which contains real distances
 	* */
-std::vector <Matrix_double> mapDistances(std::vector <int> roi, double b, double d, std::vector <double> yValues);
+std::vector <Matrix_double> mapDistances(std::vector <int> roi, double a, double b, double c, double d);
+
+/**
+    * Function to generate a map reconstruction on PCD format.
+    * @param distances vector which contains the real distance of pixels which pertains to Region of Interest
+    * @param roi vector which contains the pixels which pertains to Region of Interest
+    * @param cloud input cloud to be enhanced
+    * @param labeled vector which contains which pixels are labeled as floor
+    * @param a a parameter of input surface
+    * @param b b parameter of input surface
+    * @param c c parameter of input surface
+    * @param d d parameter of input surface
+    * @return matrix of vectors which contains real distances
+    * */
+pcl::PointCloud<pcl::PointXYZRGBA>::Ptr mapEnhance(std::vector <Matrix_double> distances, std::vector <int> roi, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::vector <int> labeled, double a, double b, double c, double d);
 };
 
 #endif // MAP_H

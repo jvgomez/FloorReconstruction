@@ -19,6 +19,8 @@
  */
 #include <iostream>
 
+#include <pcl/console/time.h>
+
 #include "../include/filtering.h"
 #include "../include/segmentation.h"
 #include "../include/colour_analysis.h"
@@ -27,10 +29,6 @@
 #include "../include/visualize.h"
 #include "../include/save.h"
 #include "../include/map.h"
-
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/console/time.h>
 
 int main(int argc, char** argv) 
 {
@@ -45,7 +43,6 @@ int main(int argc, char** argv)
 
 	pcl::PCDReader reader;
 	reader.read (argv[4], *cloud); 
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr mycloudPtr (new pcl::PointCloud<pcl::PointXYZRGBA> (*cloud)); 
 	
 	pcl::console::TicToc timer;
 	
@@ -84,14 +81,7 @@ int main(int argc, char** argv)
 	
 	// Map reconstruction
 	Map map;
-	
-	// Extract height values
-	std::vector <double> y_values(640);
-	for (int i=0; i<640; i++)
-	{
-		y_values[i]=cloud->points[640*410+i].y;
-	}
-	std::vector<Matrix_double> distancesLabeled=map.mapDistances(index, surfaces[0].b, surfaces[0].d, y_values);
+	std::vector<Matrix_double> distancesLabeled=map.mapDistances(index, surfaces[0].a ,surfaces[0].b, surfaces[0].c, surfaces[0].d);
 	
 	std::cout << "Part 1 finished" << std::endl;
 	timer.toc_print();
@@ -105,31 +95,32 @@ int main(int argc, char** argv)
 	
 	// Draw lines
 	Visualize visualize;
-	environment=visualize.drawLines (environment, linePoints, "red");
+	environment=visualize.drawLines (environment, linePoints, "green");
 	
 	// Print floor
 	std::vector<int> pixels=colouranalysis.labelPixel(pixels_labeled, index, colours);
 	environment=visualize.drawFloor (pixels, environment, "cyan");
 	
 	std::vector <int> kinectIndex=roi.extractFloorIdx(surfaces[0].a, surfaces[0].b, surfaces[0].c, surfaces[0].d, cloud);
-	environment=visualize.drawFloor (kinectIndex, environment, "green");
+	environment=visualize.drawFloor (kinectIndex, environment, "blue");
 	
 	// Reconstruct kinect floor
 	std::vector <int> kinect (kinectIndex.size(), 1);
-	std::vector<Matrix_double> distancesKinect=map.mapDistances(kinectIndex, surfaces[0].b, surfaces[0].d, y_values);
+	std::vector<Matrix_double> distancesKinect=map.mapDistances(kinectIndex, surfaces[0].a ,surfaces[0].b, surfaces[0].c, surfaces[0].d);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudEnhanced=map.mapEnhance(distancesLabeled, index, cloud, pixels_labeled, surfaces[0].a ,surfaces[0].b, surfaces[0].c, surfaces[0].d);
 	
 	// Generate map reconstruction image
-	cv::Mat map_reconstruction(cv::Size(500,800),CV_8UC3);
+	cv::Mat map_reconstruction(cv::Size(400,650),CV_8UC3);
 	map_reconstruction=cv::Scalar(0,0,0);
-	map_reconstruction=visualize.mapGeneration(map_reconstruction, pixels_labeled, distancesLabeled, "white", "blue");
+	map_reconstruction=visualize.mapGeneration(map_reconstruction, pixels_labeled, distancesLabeled, "blue", "white");
 	map_reconstruction=visualize.mapGeneration(map_reconstruction, kinect, distancesKinect, "red", "yellow");
 	
 	// Show images on a window
 	std::string name_window="Floor window";
-	visualize.visualize (environment, name_window);
+    visualize.visualizeImage (environment, name_window);
 	name_window="Map window";
-	visualize.visualize (map_reconstruction, name_window);
-	cv::waitKey();
+    visualize.visualizeImage (map_reconstruction, name_window);
+    visualize.visualizeCloud(cloudEnhanced, "Cloud");
 	
 	// Save images
 	Save save;
@@ -144,6 +135,7 @@ int main(int argc, char** argv)
 		
 	std::cout << "Part 2 finished" << std::endl;
 	timer.toc_print();
+	cv::waitKey();
 	
 	return 0;
 }

@@ -26,7 +26,7 @@ Pinhole::Pinhole() {}
 
 Pinhole::~Pinhole() {}
 
-std::vector<double> Pinhole::pinholeInverse (double x, double y, double b, double d, double y_aux)
+std::vector<double> Pinhole::pinholeInverse (double x, double y, double b, double d)
 {
 	std::vector <double> distances(2,-999999);
 	
@@ -38,14 +38,15 @@ std::vector<double> Pinhole::pinholeInverse (double x, double y, double b, doubl
 	double cy=2.3273913761751615*100;
 	
 	// Calcule pinhole model
+	double y_aux=-d/b;
 	double z_aux=fy*y_aux/(y-cy);
     double x_aux=(x-cx)*z_aux/fx;
 	
 	// return pinhole value if it is between 0 an 40m in absolute value
-	if (std::abs(z_aux)<y_aux*20)
+	if (std::abs(z_aux)<25)
 	{
-		distances[0]=x_aux*100;
-		distances[1]=z_aux*100;
+		distances[0]=x_aux;
+		distances[1]=z_aux;
 	}
 
 	return distances;

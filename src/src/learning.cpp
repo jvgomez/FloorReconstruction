@@ -20,6 +20,7 @@
 
 #include "../include/learning.h"
 #include "../include/statistics.h"
+#include "../include/algebra.h"
 
 #include <iostream>
 #include <algorithm>
@@ -55,8 +56,8 @@ Gauss Learning::updateGaussians(std::vector<Matrix_double> covariances_invert1, 
 				}
 			}
 		}
-		Statistics statistics;
-		covariances_invert=statistics.inv(covariances); // update covariances_invert
+        Algebra algebra;
+        covariances_invert=algebra.inv(covariances); // update covariances_invert
 		
 		#pragma omp parallel 
 		{

@@ -21,6 +21,8 @@
 #include "../include/visualize.h"
 #include "../include/matrix.h"
 
+#include <pcl/visualization/cloud_viewer.h>
+
 Visualize::Visualize() {}
 
 Visualize::~Visualize() {}
@@ -169,9 +171,9 @@ cv::Mat Visualize::mapGeneration(cv::Mat image, std::vector <int> label, std::ve
 				//If the pixel is located in a safe zone (in a distance between 0 an 40m in absolute value) print the pixel
 				if (distances[i].columns[0]!=-999999 && distances[i].columns[1]!=-999999)
 				{
-					int x_aux1=700-abs(distances[i].columns[1])/5;
+                    int x_aux1=600-abs(distances[i].columns[1])*100/5;
 			
-					int y_aux1=250+(distances[i].columns[0])/5;
+                    int y_aux1=200+(distances[i].columns[0])*100/5;
 
 					std::vector <double> colours (3,0);
 					
@@ -181,7 +183,7 @@ cv::Mat Visualize::mapGeneration(cv::Mat image, std::vector <int> label, std::ve
 					else
 						colours=obstacle;
 					
-					for (int j=x_aux1; j<=x_aux1+10; j++)
+					for (int j=x_aux1; j<=x_aux1+40; j++)
 					{
 							image.at<cv::Vec3b>(j,y_aux1)[3] = colours[2];
 							image.at<cv::Vec3b>(j,y_aux1)[2] = colours[0];
@@ -196,8 +198,16 @@ cv::Mat Visualize::mapGeneration(cv::Mat image, std::vector <int> label, std::ve
 	return image;
 }
 
-void Visualize::visualize (cv::Mat image, std::string windowName)
+void Visualize::visualizeImage (cv::Mat image, std::string windowName)
 {
 	cv::namedWindow(windowName, CV_WINDOW_AUTOSIZE);// Create a window for display.
     cv::imshow(windowName, image);  // Show an image inside the window
+}
+
+void Visualize::visualizeCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::string windowName)
+{
+    pcl::visualization::CloudViewer viewer (windowName); // Create a window for display.
+    viewer.showCloud (cloud); // Show an image inside the window
+
+    while (!viewer.wasStopped ()){}
 }

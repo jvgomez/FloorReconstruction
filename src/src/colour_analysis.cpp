@@ -22,6 +22,7 @@
 
 #include "../include/colour_analysis.h"
 #include "../include/extract_colour.h"
+#include "../include/algebra.h"
 
 ColourAnalysis::ColourAnalysis() {}
 
@@ -62,6 +63,7 @@ Gauss ColourAnalysis::calculeGaussiansParameters(std::vector<Matrix_double> colo
 	
 	Gauss gauss;
 	Statistics statistics;
+    Algebra algebra;
 	
 	#pragma omp parallel 
 	{
@@ -84,7 +86,7 @@ Gauss ColourAnalysis::calculeGaussiansParameters(std::vector<Matrix_double> colo
 
 	std::vector<Matrix_double>covariances=statistics.covMeans(colors, gauss.means); // calcule covariances
 	gauss.covariances=covariances;
-	gauss.covariances_invert=statistics.inv(covariances); // calcule covariances_invert
+    gauss.covariances_invert=algebra.inv(covariances); // calcule covariances_invert
 	
 	gauss.mass=colors.size(); // calcule mass
 	

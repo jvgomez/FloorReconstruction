@@ -25,6 +25,9 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
 #include "surface.h"
 #include "matrix.h"
 
@@ -61,11 +64,19 @@ std::vector<double> colour (std::string colour);
 
 /**
 	* Function to show an image on Mat format
-	* @param image input image on Mat format
+    * @param input image on Mat format
 	* @param windowName name of window
 	* @return Nothing
 	* */
-void visualize (cv::Mat image, std::string windowName);
+void visualizeImage (cv::Mat image, std::string windowName);
+
+/**
+    * Function to show a point cloud on PCD format
+    * @param input point cloud on PCD format
+    * @param windowName name of window
+    * @return Nothing
+    * */
+void visualizeCloud (pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::string windowName);
 
 /**
 	* Function to generate a map reconstruction on Mat format. The function asumes that each pixel of the image represents a square of evironment of 5cm width and 5cm height

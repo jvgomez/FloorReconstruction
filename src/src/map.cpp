@@ -20,18 +20,30 @@
 
 #include <iostream>
 #include <omp.h>
+#include <cmath>
 
 #include "../include/map.h"
 #include "../include/pinhole.h"
+#include "../include/algebra.h"
 
 Map::Map() {}
 
 Map::~Map() {}
 
-std::vector <Matrix_double> Map::mapDistances(std::vector <int> roi, double b, double d, std::vector <double> yValues)
+std::vector <Matrix_double> Map::mapDistances(std::vector <int> roi, double a, double b, double c, double d)
 {
 	std::vector <Matrix_double> distances (roi.size());
 	Pinhole pinhole;
+    Algebra algebra;
+	
+	std::vector <double> wpi (3,0);
+	wpi[1]=-1;
+	std::vector <double> wpr (3,0);
+	wpr[0]=a;
+	wpr[1]=b;
+	wpr[2]=c;
+	
+    double alpha=algebra.angleVectors(wpi, wpr);
 
 	#pragma omp parallel 
 	{
@@ -39,14 +51,57 @@ std::vector <Matrix_double> Map::mapDistances(std::vector <int> roi, double b, d
 		{
 			for (int i=0; i<roi.size(); i++)
 			{
-				int y=roi[i]/640;
-				int x=roi[i]%640;
+                std::vector <double> pixels (3,1);
+                pixels[1]=roi[i]/640;
+                pixels[0]=roi[i]%640;
 				
-				distances[i].columns=pinhole.pinholeInverse(x, y, b, d, yValues[x]);
-
+                std::vector <double> pixelsRotated=algebra.productMatrix3x1(algebra.rotz(-alpha),pixels);
+				
+                distances[i].columns=pinhole.pinholeInverse(pixelsRotated[0], pixelsRotated[1], b, d);
 			}
 		}
 	}
 	
 	return distances;
+}
+
+pcl::PointCloud<pcl::PointXYZRGBA>::Ptr Map::mapEnhance(std::vector <Matrix_double> distances, std::vector <int> roi, pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud, std::vector <int> labeled, double a, double b, double c, double d)
+{
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudEnhanced=cloud;
+    Algebra algebra;
+
+    std::vector <double> wpi (3,0);
+    wpi[1]=-1;
+    std::vector <double> wpr (3,0);
+    wpr[0]=a;
+    wpr[1]=b;
+    wpr[2]=c;
+
+    double alpha=algebra.angleVectors(wpi, wpr);
+
+    #pragma omp parallel
+    {
+        #pragma omp for shared (cloudEnhanced, a, b, c, d, alpha, roi) private (i) reduction(+: sum)
+        {
+            for (int i=0; i<roi.size(); i++)
+            {
+                if (!pcl_isfinite(cloudEnhanced->points[roi[i]].x) && !pcl_isfinite(cloudEnhanced->points[roi[i]].y) && !pcl_isfinite(cloudEnhanced->points[roi[i]].z) && labeled[i]==1)
+                {
+                    if (std::abs(distances[i].columns[1]) <25)
+                    {
+                        std::vector <double> distances_aux=distances[i].columns;
+                        distances_aux.push_back(1);
+
+                        std::vector <double> distancesRotated=algebra.productMatrix3x1(algebra.rotz(alpha), distances_aux);
+
+                        cloudEnhanced->points[roi[i]].x=distancesRotated[0];
+                        cloudEnhanced->points[roi[i]].z=distancesRotated[1];
+                        cloudEnhanced->points[roi[i]].y=(-d-a*cloudEnhanced->points[roi[i]].x-c*cloudEnhanced->points[roi[i]].z)/b;
+                    }
+                }
+            }
+        }
+    }
+	
+	return cloudEnhanced;
 }

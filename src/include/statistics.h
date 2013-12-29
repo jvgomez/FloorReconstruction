@@ -77,13 +77,6 @@ double covLineMeans (std::vector<Matrix_double> data_inputs, std::vector<double>
 std::vector<Matrix_double> covMeans (std::vector<Matrix_double> datas, std::vector<double> means);
 
 /**
-	* Function to calcule inverse matrix
-	* @param datas input matrix
-	* @return inverse matrix
-	* */
-std::vector<Matrix_double> inv (std::vector <Matrix_double> datas);
-
-/**
 	* Function to calcule Mahalanobis distance between a Gaussian and a point
 	* @param covariances_invert inverse covariances matrix of Gaussian
 	* @param means means values of Gaussian

@@ -19,6 +19,8 @@
  */
 
 #include "../include/statistics.h"
+#include "../include/algebra.h"
+
 #include <numeric>
 #include <cmath>
 #include <iostream>
@@ -179,41 +181,7 @@ std::vector<Matrix_double> Statistics::covMeans (std::vector <Matrix_double> dat
 	return covariances;
 }
 
-std::vector<Matrix_double> Statistics::inv (std::vector <Matrix_double> datas)
-{
-	std::vector<Matrix_double> inverse;
-	
-	Matrix_double cc2;
-	Matrix_double cc3;
-	Matrix_double cc4;        
 
-	double determinant=datas[0].columns[0]*datas[1].columns[1]*datas[2].columns[2]+
-	datas[0].columns[1]*datas[1].columns[2]*datas[2].columns[0]+
-	datas[0].columns[2]*datas[2].columns[1]*datas[1].columns[0]-
-	datas[0].columns[2]*datas[1].columns[1]*datas[2].columns[0]-
-	datas[0].columns[1]*datas[1].columns[0]*datas[2].columns[2]-
-	datas[0].columns[0]*datas[1].columns[2]*datas[2].columns[1];
-
-	cc2.columns.push_back((datas[1].columns[1]*datas[2].columns[2]-datas[1].columns[2]*datas[2].columns[1])/determinant);
-	cc2.columns.push_back(-(datas[0].columns[1]*datas[2].columns[2]-datas[2].columns[1]*datas[0].columns[2])/determinant);
-	cc2.columns.push_back((datas[0].columns[1]*datas[1].columns[2]-datas[1].columns[1]*datas[0].columns[2])/determinant);
-
-	inverse.push_back(cc2);
-
-	cc3.columns.push_back(-(datas[1].columns[0]*datas[2].columns[2]-datas[2].columns[0]*datas[1].columns[2])/determinant);
-	cc3.columns.push_back((datas[0].columns[0]*datas[2].columns[2]-datas[2].columns[0]*datas[0].columns[2])/determinant);
-	cc3.columns.push_back(-(datas[0].columns[0]*datas[1].columns[2]-datas[1].columns[0]*datas[0].columns[2])/determinant);
-
-	inverse.push_back(cc3);
-
-	cc4.columns.push_back((datas[1].columns[0]*datas[2].columns[1]-datas[2].columns[0]*datas[1].columns[1])/determinant);
-	cc4.columns.push_back(-(datas[0].columns[0]*datas[2].columns[1]-datas[2].columns[0]*datas[0].columns[1])/determinant);
-	cc4.columns.push_back((datas[0].columns[0]*datas[1].columns[1]-datas[0].columns[1]*datas[1].columns[0])/determinant);
-
-	inverse.push_back(cc4);
-	
-	return inverse;
-}
 
 double Statistics::mahalanobisDistance2Point(std::vector<Matrix_double> covariances_invert, std::vector <double> means, std::vector <double> points)
 {
